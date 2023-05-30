@@ -31,23 +31,23 @@ dataset = np.array([
 #df2.index=blankIndex
 #print("The original dataset to train on: \n", df2)
 
-input = dataset[:, 0:10]
+y = dataset[:, 0:10]
 output = dataset[:, 10]
-print("\noutput: ", output, "\ninput: \n", input)
+print("\noutput: ", output, "\ninput: \n", y)
 
 # Convert strings to integer values for the 12x10 dataset
 le = preprocessing.LabelEncoder()
-print("this is length:", len(input))
-for i in range(len(input)):
+print("this is length:", len(y))
+for i in range(len(y)):
     for j in range(10):
-        input[:, j] = le.fit_transform(input[:, j]) #input is a 12x10 matrix, goes through every column
+        y[:, j] = le.fit_transform(y[:, j]) #y is a 12x10 matrix, goes through every column
 output = le.fit_transform(output) #output is a row vector
-print("input after lavel encoder: \n", input)
+print("y after lavel encoder: \n", y)
 print("output after label encoder:", output)
 
 # Create classifier object
 dtc = tree.DecisionTreeClassifier(criterion="entropy") #splitting by entropy
-dtc.fit(input, output) #training classifer object to build the decision tree
+dtc.fit(y, output) #training classifer object to build the decision tree
 
 # Plot the decision tree
 dot_data = tree.export_graphviz(dtc, out_file=None,
@@ -58,4 +58,15 @@ graph = graphviz.Source(dot_data)
 graph.render("decision-tree")
 
 """ inputs by user to predict answer """
+
+while(True):
+    print("\n-- Menu --\n1. Input data into dataset\n2. Visualize current dataset\n3. Visualize current decision tree\n4. Predict a decision\n5. Exit")
+    option = int(input("option (number) : "))
+    
+    if option == 1:
+        print("test")
+    elif option == 5:
+        break
+    
+    
   
