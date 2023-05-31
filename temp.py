@@ -7,6 +7,7 @@ from sklearn import tree
 from sklearn import preprocessing
 #import graphviz
 
+
 """ train on data """
 
 # Dataset training with
@@ -30,47 +31,55 @@ y = dataset[:, 0:10]
 output = dataset[:, 10]
 print("\noutput: ", output, "\ninput: \n", y)
 
+#VIS TREE
 # Convert strings to integer values for the 12x10 dataset
 le = preprocessing.LabelEncoder()
 print("this is length:", len(y))
 for i in range(len(y)):
-    for j in range(10):
+    for j in range(10): #HAVE TO FIND A WAY TO FIND THE NUMBER OF COLUMNS
         y[:, j] = le.fit_transform(y[:, j]) #y is a 12x10 matrix, goes through every column
 output = le.fit_transform(output) #output is a row vector
-print("y after lavel encoder: \n", y)
+print("y after label encoder: \n", y)
 print("output after label encoder:", output)
 
 # Create classifier object
 dtc = tree.DecisionTreeClassifier(criterion="entropy") #splitting by entropy
 dtc.fit(y, output) #training classifer object to build the decision tree
 
-'''
-# Plot the decision tree
-dot_data = tree.export_graphviz(dtc, out_file=None,
-feature_names=['Alternative', 'Bar', 'Friday','Hungry','Patrons', 'Price', 'Rain', 'Reservation', 'Type', 'Estimate'],
-class_names=le.classes_,
-filled=True, rounded=True)
-graph = graphviz.Source(dot_data)
-graph.render("decision-tree")
+""" function to print the dataset as a table """
+def visData():
+    df2 = pd.DataFrame(dataset, columns=['Alternative', 'Bar', 'Friday','Hungry','Patrons', 'Price', 'Rain', 'Reservation', 'Type', 'Estimate', 'Will Wait'])
+    blankIndex=[''] * len(df2)
+    df2.index=blankIndex
+    print("The original dataset to train on: \n", df2)
 
-'''
-
-#def visData():
-    #df2 = pd.DataFrame(dataset, columns=['Alternative', 'Bar', 'Friday','Hungry','Patrons', 'Price', 'Rain', 'Reservation', 'Type', 'Estimate', 'Will Wait'])
-    #blankIndex=[''] * len(df2)
-    #df2.index=blankIndex
-    #print("The original dataset to train on: \n", df2)
-
+""" function to print the decision tree """
 #def visTree():
+    # Plot the decision tree
+    if dtc == None:
+        print("deicision tree does not exist")
+    else: 
+        #dot_data = tree.export_graphviz(dtc, out_file=None,
+        #                                feature_names=['Alternative', 'Bar', 'Friday','Hungry','Patrons', 'Price', 'Rain', 'Reservation', 'Type', 'Estimate'],
+        #                                class_names=le.classes_,
+        #                                filled=True, rounded=True)
+        #graph = graphviz.Source(dot_data)
+        #graph.render("decision-tree")
+    
+""" function to predict output based on prompted inputs """
 
-""" train dataset """
-print("The agent is currently being trainned by the default dataset...")
+
+""" user interface """
+print("\n-- Welcome to Decision Tree Program! --")
+
+# train dataset
+print("The agent is currently being trained by the default dataset...")
 
 while(True):
     print("\n-- Menu --\n1. Update dataset\n2. Visualize current dataset\n3. Visualize current decision tree\n4. Predict a decision\n5. Exit")
     option = int(input("option (number) : "))
     
-    if option == 1:
+    if option == 1: #update dataset
         #prompt user for dataset
         print("Please input the following information...")
         alt = str(input("Alternative : ")).lower()
@@ -87,15 +96,18 @@ while(True):
         #update dataset with new values
         dataset = np.append(dataset, [alt, bar, friday, hungry, pat, price, rain, res, ty, est], axis=0)
         print(dataset)
-    elif option == 2:
+    elif option == 2: #visualize current dataset
         print("option 2")
         #visData()
-    elif option == 3:
+    elif option == 3: #print decision tree
         print("option 3")
-    elif option == 4:
+        #visTree()
+    elif option == 4: #predict
         print("option 2")
-    else:
+    else: #exit
         break
+
+print(-- "Program successfully terminated! --")
     
     
   
