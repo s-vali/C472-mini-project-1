@@ -48,7 +48,7 @@ def visTree(dtc, le):
 """ function to print the dataset as a table """
 def visData(dataset):
     
-    if not dataset:
+    if not np.any(dataset) == True:
         print("The dataset does not yet exist.")
     else:
         df = pd.DataFrame(dataset, columns=['Alternative', 'Bar', 'Friday','Hungry','Patrons', 'Price', 'Rain', 'Reservation', 'Type', 'Estimate', 'Will Wait'])
@@ -83,17 +83,17 @@ dataset = np.array([
 ['no', 'no', 'no', 'no', 'none', '$', 'no', 'no', 'thai', '0-10', 'no'], 
 ['yes', 'yes', 'yes', 'yes', 'full', '$', 'no', 'no', 'burger', '30-60', 'yes'],
 ])
-print("the default dataset : \n", dataset)
+print("\nThe default dataset : \n", dataset)
 print("The agent is currently being trained by the default dataset...")
 trainTree(dataset)
 print("The agent has been trained...\n")
 
 # List menu options 
 while(True):
-    print("\n-- Menu --\n1. Update dataset\n2. Visualize current dataset\n3. Visualize current decision tree\n4. Predict a decision\n5. Exit\n")
-    option = int(input("option (number) : "))
+    print("-- Menu --\n1. Update dataset\n2. Visualize current dataset\n3. Visualize current decision tree\n4. Predict a decision\n5. Exit\n")
+    option = str(input("option (number) : "))
     
-    if option == 1: #update dataset
+    if option == "1": #update dataset
         #prompt user for dataset
         print("Please input the following information...")
         alt = str(input("Alternative : ")).lower()
@@ -111,14 +111,14 @@ while(True):
         dataset = np.vstack((dataset, np.array([alt, bar, friday, hungry, pat, price, rain, res, ty, est, ans])))
         print("The dataset has been updated successfully. ")
     
-    elif option == 2: #visualize current dataset
+    elif option == "2": #visualize current dataset
         visData(dataset)
     
-    elif option == 3: #print decision tree
+    elif option == "3": #print decision tree
         dtc, le = trainTree(dataset)
         visTree(dtc, le)
    
-    elif option == 4: #predict
+    elif option == "4": #predict
         #prompt user for dataset
         print("Please input the following information...")
         alt = str(input("Alternative : ")).lower()
