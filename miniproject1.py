@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 """ imports """
 import numpy as np
@@ -7,41 +6,33 @@ from sklearn import tree
 from sklearn import preprocessing
 import graphviz
 
+
 """ train tree """
 def trainTree(dataset):
-    #determine output and input arrays
-    y = dataset[:, 0:10]
-    output = dataset[:, 10]
-    #print("\noutput: ", output, "\ninput: \n", y)
+
+    # Determine output and input arrays
+    input_matrix = dataset[:, 0:(dataset.shape[1]-1)]
+    output = dataset[:, (dataset.shape[1]-1)]
     
     # Convert strings to integer values for the 12x10 dataset
     le = preprocessing.LabelEncoder()
-    print("this is length:", len(y))
-    for i in range(len(y)):
-        for j in range(y.shape[1]): #HAVE TO FIND A WAY TO FIND THE NUMBER OF COLUMNS
-            y[:, j] = le.fit_transform(y[:, j]) #y is a 12x10 matrix, goes through every column
+    col_names = input_matrix.shape[1]
+    for i in range(len(input_matrix)):
+        for j in range(col_names): 
+            input_matrix[:, j] = le.fit_transform(input_matrix[:, j]) #input_matrix is a 12x10 matrix, goes through every column
     output = le.fit_transform(output) #output is a row vector
-    print("y after label encoder: \n", y)
-    print("output after label encoder:", output)
 
     # Create classifier object
     dtc = tree.DecisionTreeClassifier(criterion="entropy", max_depth=9) #splitting by entropy
-    dtc.fit(y, output) #training classifer object to build the decision tree
+    dtc.fit(input_matrix, output) #training classifer object to build the decision tree
+    
+    # Return so other functions can make use of dtc and le
     return dtc, le
 
-""" function to print the dataset as a table """
-def visData(dataset):
-    if False: #dataset.any() == False:
-        print("The dataset does not yet exist.")
-    else:
-        df2 = pd.DataFrame(dataset, columns=['Alternative', 'Bar', 'Friday','Hungry','Patrons', 'Price', 'Rain', 'Reservation', 'Type', 'Estimate', 'Will Wait'])
-        blankIndex=[''] * len(df2)
-        df2.index=blankIndex
-        print("The original dataset to train on: \n", df2)
 
 """ function to print the decision tree """
 def visTree(dtc, le):
-    # Plot the decision tree
+    
     if dtc == None:
         print("The decision tree does not exist.")
     else: 
@@ -50,20 +41,34 @@ def visTree(dtc, le):
                                         class_names=le.classes_,
                                         filled=True, rounded=True)
         graph = graphviz.Source(dot_data)
-        graph.render("decision-tree-1")
-        print("The file 'decision-tree.pdf' has been made.")
+        graph.render("mini-project-decision-tree")
+        print("The file 'mini-project-decision-tree.pdf' has been made with the current decision tree.")
+        
+
+""" function to print the dataset as a table """
+def visData(dataset):
     
+    if not dataset:
+        print("The dataset does not yet exist.")
+    else:
+        df = pd.DataFrame(dataset, columns=['Alternative', 'Bar', 'Friday','Hungry','Patrons', 'Price', 'Rain', 'Reservation', 'Type', 'Estimate', 'Will Wait'])
+        blankIndex=[''] * len(df)
+        df.index=blankIndex
+        print("The current dataset : ", df)
+
+
 """ function to predict output based on prompted inputs """
 def predict(dtc, le, alt, bar, friday, hungry, pat, price, rain, res, ty, est):
+    
+    # Call predict from Data Tree Classifier
     y_pred = dtc.predict([[alt, bar, friday, hungry, pat, price, rain, res, ty, est]]) 
     print("Predicted output : ", le.inverse_transform(y_pred))
+
 
 """ user interface """
 print("\n-- Welcome to Decision Tree Program! --")
 
-# train dataset
-print("The agent is currently being trained by the default dataset...\n")
-# Dataset training with
+# Train dataset
 dataset = np.array([
 ['yes', 'no', 'no', 'yes', 'some', '$$$', 'no', 'yes', 'french', '0-10', 'yes'],
 ['yes', 'no', 'no', 'yes', 'full', '$', 'no', 'no', 'thai', '30-60', 'no'],
@@ -79,7 +84,11 @@ dataset = np.array([
 ['yes', 'yes', 'yes', 'yes', 'full', '$', 'no', 'no', 'burger', '30-60', 'yes'],
 ])
 print("the default dataset : \n", dataset)
- 
+print("The agent is currently being trained by the default dataset...")
+trainTree(dataset)
+print("The agent has been trained...\n")
+
+# List menu options 
 while(True):
     print("\n-- Menu --\n1. Update dataset\n2. Visualize current dataset\n3. Visualize current decision tree\n4. Predict a decision\n5. Exit\n")
     option = int(input("option (number) : "))
@@ -97,17 +106,18 @@ while(True):
         res = str(input("Reservation : ")).lower()
         ty = str(input("Type : ")).lower()
         est = str(input("Estimate : ")).lower()
-        ans = str(input("Answer : ")).lower()
-        
+        ans = str(input("Answer : ")).lower()     
         #update dataset with new values
         dataset = np.vstack((dataset, np.array([alt, bar, friday, hungry, pat, price, rain, res, ty, est, ans])))
-        print("new dataset", dataset)
+        print("The dataset has been updated successfully. ")
+    
     elif option == 2: #visualize current dataset
         visData(dataset)
+    
     elif option == 3: #print decision tree
-        print("option 3")
-        t, z = trainTree(dataset)
-        visTree(t, z)
+        dtc, le = trainTree(dataset)
+        visTree(dtc, le)
+   
     elif option == 4: #predict
         #prompt user for dataset
         print("Please input the following information...")
@@ -121,8 +131,9 @@ while(True):
         res = str(input("Reservation : ")).lower()
         ty = str(input("Type : ")).lower()
         est = str(input("Estimate : ")).lower()
-        t, z = trainTree(dataset)
-        predict(t, z, alt, bar, friday, hungry, pat, price, rain, res, ty, est)
+        dtc, le = trainTree(dataset)
+        print("The prediction is : ",  predict(dtc, le, alt, bar, friday, hungry, pat, price, rain, res, ty, est))
+    
     else: #exit
         break
 
