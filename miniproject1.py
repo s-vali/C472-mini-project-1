@@ -18,7 +18,7 @@ def trainTree(dataset):
     le = preprocessing.LabelEncoder()
     print("this is length:", len(y))
     for i in range(len(y)):
-        for j in range(10): #HAVE TO FIND A WAY TO FIND THE NUMBER OF COLUMNS
+        for j in range(y.shape[1]): #HAVE TO FIND A WAY TO FIND THE NUMBER OF COLUMNS
             y[:, j] = le.fit_transform(y[:, j]) #y is a 12x10 matrix, goes through every column
     output = le.fit_transform(output) #output is a row vector
     print("y after label encoder: \n", y)
@@ -81,7 +81,7 @@ dataset = np.array([
 print("the default dataset : \n", dataset)
  
 while(True):
-    print("\n-- Menu --\n1. Update dataset\n2. Visualize current dataset\n3. Visualize current decision tree\n4. Predict a decision\n5. Exit")
+    print("\n-- Menu --\n1. Update dataset\n2. Visualize current dataset\n3. Visualize current decision tree\n4. Predict a decision\n5. Exit\n")
     option = int(input("option (number) : "))
     
     if option == 1: #update dataset
@@ -97,10 +97,11 @@ while(True):
         res = str(input("Reservation : ")).lower()
         ty = str(input("Type : ")).lower()
         est = str(input("Estimate : ")).lower()
+        ans = str(input("Answer : ")).lower()
         
         #update dataset with new values
-        dataset = np.append(dataset, [alt, bar, friday, hungry, pat, price, rain, res, ty, est], axis=0)
-        print(dataset)
+        dataset = np.vstack((dataset, np.array([alt, bar, friday, hungry, pat, price, rain, res, ty, est, ans])))
+        print("new dataset", dataset)
     elif option == 2: #visualize current dataset
         visData(dataset)
     elif option == 3: #print decision tree
