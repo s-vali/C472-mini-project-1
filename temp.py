@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn import tree
 from sklearn import preprocessing
-#import graphviz
+import graphviz
 
 
 """ train tree """
