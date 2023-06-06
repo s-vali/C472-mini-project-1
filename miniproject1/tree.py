@@ -1,6 +1,10 @@
 import numpy as np
 import pandas as pd
 import math
+from sklearn import tree
+from sklearn import preprocessing
+import graphviz
+
 
 # textbook dataset
 dataset = np.array([
@@ -26,8 +30,33 @@ col_names = ['Alt', 'Bar', 'Fri', 'Hun', 'Pat', 'Price', 'Rain', 'Res', 'Type', 
 df = pd.DataFrame(dataset, columns=col_names)
 
 
+# DECISION TREE CONSTRUCTION
+""" train tree """
+def trainTree(dataset):
+
+    # Determine output and input arrays
+    input_matrix = dataset[:, 0:(dataset.shape[1]-1)]
+    output = dataset[:, (dataset.shape[1]-1)]
+    
+    # Convert strings to integer values for the 12x10 dataset
+    le = preprocessing.LabelEncoder()
+    col_names = input_matrix.shape[1]
+    for i in range(len(input_matrix)):
+        for j in range(col_names): 
+            input_matrix[:, j] = le.fit_transform(input_matrix[:, j]) #input_matrix is a 12x10 matrix, goes through every column
+    output = le.fit_transform(output) #output is a row vector
+
+    # Create classifier object
+    dtc = tree.DecisionTreeClassifier(criterion="entropy", max_depth=9) #splitting by entropy
+    dtc.fit(input_matrix, output) #training classifer object to build the decision tree
+    
+    # Return so other functions can make use of dtc and le
+    return dtc, le
+
+
+
 # Print the DataFrame
-print(df)
+print(df, "\n")
 
 # ENTROPY CALCULATION
 # Function to calculate entropy 
@@ -91,40 +120,161 @@ def find_best_split(dataset, features, target):
 
 
 
-# TESTING
+# TESTING FOR ENTROPY AND BEST FEATURE FOR SPLITTING
 # Specify the features and target variable
 features = ['Alt', 'Bar', 'Fri', 'Hun', 'Pat', 'Price', 'Rain', 'Res', 'Type', 'Est']
 target = 'Output'
 
 # Find the best feature for splitting
 best_feature = find_best_split(df, features, target)
-print("Best feature for splitting:", best_feature)
-
+print("Best feature for splitting:", best_feature, "\n")
 
 
 # Note: entropy is higher than 1 for this example. 
 
 price_labels = df['Price'].tolist()
-print(price_labels)
+print("Price: ", price_labels, "\n")
 
 entropy = calculate_entropy(price_labels)
-print("Entropy:", entropy)
+print("Entropy:", entropy, "\n")
 
 
 # Note: in this example entropy = 1.0 
 
 alt_labels = df['Alt'].tolist()
-print(alt_labels)
+print("Alternative: ", alt_labels, "\n")
 
 entropy = calculate_entropy(alt_labels)
-print("Entropy:", entropy)
+print("Entropy:", entropy, "\n")
 
 # Note: higher entropy -> root of decision tree
 
 pat_labels = df['Pat'].tolist()
-print(pat_labels)
+print("Patrons:", pat_labels, "\n")
 
 entropy = calculate_entropy(pat_labels)
-print("Entropy:", entropy)
+print("Entropy:", entropy, "\n")
 
-# CLASSIFICATION
+""" function to print the decision tree """
+def visTree(dtc, le):
+    
+    if dtc == None:
+        print("The decision tree does not exist.")
+    else: 
+        dot_data = tree.export_graphviz(dtc, out_file=None,
+                                        feature_names=['Alt', 'Bar', 'Fri','Hun','Pat', 'Price', 'Rain', 'Res', 'Type', 'Est'],
+                                        class_names=le.classes_,
+                                        filled=True, rounded=True)
+        graph = graphviz.Source(dot_data)
+        graph.render("mini-project-decision-tree")
+        print("The file 'mini-project-decision-tree.pdf' has been made with the current decision tree.")
+        
+
+""" function to print the dataset as a table """
+def visData(dataset):
+    
+    if dataset.shape[0] == 0 and dataset.shape[1] == 0:
+        print("The dataset does not yet exist.")
+    else:
+        # df = pd.DataFrame(dataset, columns=['Alternative', 'Bar', 'Friday','Hungry','Patrons', 'Price', 'Rain', 'Reservation', 'Type', 'Estimate', 'Will Wait'])
+        # blankIndex=[''] * len(df)
+        # df.index=blankIndex
+        print("The current dataset : ", dataset, "\n")
+
+
+""" function to predict output based on prompted inputs """
+def pred(dtc, le, alt, bar, friday, hungry, pat, price, rain, res, ty, est):
+    # Call predict from Data Tree Classifier
+    temp_array = np.array([alt, bar, friday, hungry, pat, price, rain, res, ty, est])
+    l = preprocessing.LabelEncoder()
+    user_input_array = l.fit_transform(temp_array)
+    output_pred = dtc.predict([user_input_array]) 
+    print("Predicted output : ", le.inverse_transform(output_pred), "\n")
+
+
+    
+
+
+# THIS PART CRASHES INSIDE THE MENU OPTIONS
+
+""" user interface """
+print("\n-- Welcome to Decision Tree Program! --")
+
+# Train dataset
+
+# Prompt the user to enter the filename
+filename = input("Please enter the filename (including the extension): ")
+
+# Read the CSV file using the provided filename
+df = pd.read_csv(filename)
+
+# Convert DataFrame to a numpy array
+db = df.to_numpy()
+
+print("\nThe default dataset : \n", df)
+print("The agent is currently being trained by the default dataset...")
+dtc, le = trainTree(db)  # Update dtc and le with the trained decision tree
+print("The agent has been trained.\n")
+
+# List menu options 
+while(True):
+    print("-- Menu --\n1. Update dataset\n2. Visualize current dataset\n3. Visualize current decision tree\n4. Predict a decision\n5. Exit\n")
+    option = str(input("option (number) : "))
+    
+    if option == "1": #update dataset
+        #prompt user for dataset
+        print("Please input the following information...")
+        alt = str(input("Alternative : ")).lower()
+        bar = str(input("Bar : ")).lower()
+        friday = str(input("Friday : ")).lower()
+        hungry = str(input("Hungry : ")).lower()
+        pat = str(input("Patrons : ")).lower()
+        price = str(input("Price : ")).lower()
+        rain = str(input("Rain : ")).lower()
+        res = str(input("Reservation : ")).lower()
+        ty = str(input("Type : ")).lower()
+        est = str(input("Estimate : ")).lower()
+        ans = str(input("Answer : ")).lower()     
+        #update dataset with new values
+        db = np.vstack((db, np.array([alt, bar, friday, hungry, pat, price, rain, res, ty, est, ans])))
+        print("The dataset has been updated successfully. \n")
+    
+    elif option == "2": #visualize current dataset
+        visData(df)
+    
+    elif option == "3": #print decision tree
+        dtc, le = trainTree(db)
+        visTree(dtc, le)
+   
+    elif option == "4": #predict
+        #prompt user for dataset
+        print("Please input the following information...")
+        alt = str(input("Alternative : ")).lower()
+        bar = str(input("Bar : ")).lower()
+        friday = str(input("Friday : ")).lower()
+        hungry = str(input("Hungry : ")).lower()
+        pat = str(input("Patrons : ")).lower()
+        price = str(input("Price : ")).lower()
+        rain = str(input("Rain : ")).lower()
+        res = str(input("Reservation : ")).lower()
+        ty = str(input("Type : ")).lower()
+        est = str(input("Estimate : ")).lower()
+        dtc, le = trainTree(db)
+        pred(dtc, le, alt, bar, friday, hungry, pat, price, rain, res, ty, est)
+    
+    else: #exit
+        break
+
+print("\n-- Program successfully terminated! --")
+    
+    
+  
+
+
+
+
+
+
+
+
+
